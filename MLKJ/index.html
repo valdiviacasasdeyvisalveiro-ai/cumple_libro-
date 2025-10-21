@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feliz Cumpleaños</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Partículas de fondo flotantes */
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            50% { transform: translateY(-100px) translateX(50px); opacity: 0.8; }
+        }
+
+        /* Contador regresivo */
+        #countdown {
+            position: absolute;
+            font-size: clamp(80px, 15vw, 180px);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.8),
+                0 0 40px rgba(167, 139, 250, 0.6),
+                0 0 60px rgba(139, 92, 246, 0.4);
+            animation: pulse 1s ease-in-out infinite;
+            z-index: 100;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Mensaje de feliz cumpleaños */
+        #happyMessage {
+            position: absolute;
+            display: none;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.5);
+            animation: appear 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            z-index: 100;
+            padding: 40px;
+        }
+
+        #happyMessage .main-text {
+            font-size: clamp(50px, 10vw, 120px);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.9),
+                0 0 40px rgba(167, 139, 250, 0.7),
+                0 0 60px rgba(139, 92, 246, 0.5);
+            margin-bottom: 20px;
+        }
+
+        #happyMessage .sub-text {
+            font-size: clamp(14px, 2vw, 18px);
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #happyMessage .sub-text:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes appear {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Confeti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Contenedor principal del libro */
+        #bookContainer {
+            display: none;
+            position: relative;
+            width: 90vw;
+            max-width: 1000px;
+            height: 85vh;
+            max-height: 700px;
+            perspective: 2500px;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        #book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        /* Páginas del libro */
+        .page {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, #fdfcf7 0%, #f8f7f2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        .page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(90deg, 
+                rgba(0,0,0,0) 0%, 
+                rgba(0,0,0,0.03) 50%, 
+                rgba(0,0,0,0) 100%);
+            pointer-events: none;
+        }
+
+        .page.left-side {
+            left: 0;
+            border-radius: 10px 0 0 10px;
+            box-shadow: 
+                inset -20px 0 30px rgba(0,0,0,0.05),
+                5px 0 15px rgba(0,0,0,0.15);
+            transform-origin: right center;
+        }
+
+        .page.right-side {
+            left: 50%;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 
+                inset 20px 0 30px rgba(0,0,0,0.05),
+                -5px 0 15px rgba(0,0,0,0.15);
+            transform-origin: left center;
+        }
+
+        .page.turning {
+            z-index: 100;
+        }
+
+        .page.turn-forward {
+            animation: turnPageForward 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+
+        .page.turn-backward {
+            animation: turnPageBackward 1.2s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+        }
+
+        @keyframes turnPageForward {
+            0% {
+                transform: perspective(2500px) rotateY(0deg);
+                box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+            }
+            50% {
+                transform: perspective(2500px) rotateY(-90deg);
+                box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+            }
+            100% {
+                transform: perspective(2500px) rotateY(-180deg);
+                box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+            }
+        }
+
+        @keyframes turnPageBackward {
+            0% {
+                transform: perspective(2500px) rotateY(-180deg);
+                box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+            }
+            50% {
+                transform: perspective(2500px) rotateY(-90deg);
+                box-shadow: -15px 0 40px rgba(0,0,0,0.5);
+            }
+            100% {
+                transform: perspective(2500px) rotateY(0deg);
+                box-shadow: -5px 0 20px rgba(0,0,0,0.3);
+            }
+        }
+
+        .page-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        /* Layout vertical: imagen arriba, texto abajo */
+        .layout-vertical {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .layout-vertical img {
+            max-width: 85%;
+            max-height: 65%;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            object-fit: cover;
+            border: 6px solid #fff;
+            transition: transform 0.4s ease;
+        }
+
+        .layout-vertical img:hover {
+            transform: scale(1.05) rotate(1deg);
+        }
+
+        .layout-vertical .page-text {
+            font-size: clamp(18px, 2.8vw, 28px);
+            color: #764ba2;
+            text-align: center;
+            font-weight: 600;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            padding: 20px 30px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 90%;
+        }
+
+        /* Layout horizontal: texto a la izquierda, imagen a la derecha */
+        .layout-horizontal {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+        }
+
+        .layout-horizontal .text-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .layout-horizontal .page-text {
+            font-size: clamp(16px, 2.2vw, 24px);
+            color: #764ba2;
+            text-align: center;
+            font-weight: 600;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            padding: 25px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .layout-horizontal .image-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .layout-horizontal img {
+            max-width: 100%;
+            max-height: 80%;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            object-fit: cover;
+            border: 6px solid #fff;
+            transition: transform 0.4s ease;
+        }
+
+        .layout-horizontal img:hover {
+            transform: scale(1.05) rotate(-1deg);
+        }
+
+        /* Layout con dos imágenes */
+        .layout-double {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .layout-double .images-container {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .layout-double img {
+            max-width: 45%;
+            max-height: 100%;
+            border-radius: 12px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+            object-fit: cover;
+            border: 5px solid #fff;
+            transition: transform 0.4s ease;
+        }
+
+        .layout-double img:hover {
+            transform: scale(1.08) rotate(2deg);
+        }
+
+        .layout-double .page-text {
+            font-size: clamp(16px, 2.5vw, 26px);
+            color: #764ba2;
+            text-align: center;
+            font-weight: 600;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+            padding: 18px 25px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Botones de navegación */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #764ba2;
+            color: #fff;
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 10px 30px rgba(118, 75, 162, 0.5);
+        }
+
+        .nav-btn:active:not(:disabled) {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #prevBtn {
+            left: 20px;
+        }
+
+        #nextBtn {
+            right: 20px;
+        }
+
+        /* Indicador de página */
+        #pageIndicator {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #764ba2;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+            z-index: 200;
+            font-size: 16px;
+        }
+
+        /* Botón de música */
+        #musicBtn {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 200;
+        }
+
+        #musicBtn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(118, 75, 162, 0.5);
+        }
+
+        /* Corazones flotantes */
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff69b4;
+            transform: rotate(45deg);
+            pointer-events: none;
+            z-index: 40;
+            animation: heartFloat 3s ease-in-out forwards;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ff69b4;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -10px;
+            left: 0;
+        }
+
+        .heart::after {
+            left: 10px;
+            top: 0;
+        }
+
+        @keyframes heartFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(45deg) scale(0);
+            }
+            50% {
+                transform: translateY(-100px) rotate(225deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) rotate(405deg) scale(0);
+            }
+        }
+
+        /* Mensaje final */
+        #finalMessage {
+            display: none;
+            position: absolute;
+            font-size: clamp(40px, 8vw, 90px);
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.9),
+                0 0 40px rgba(167, 139, 250, 0.7);
+            z-index: 300;
+            animation: finalAppear 2s ease forwards;
+            padding: 30px;
+        }
+
+        @keyframes finalAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(-180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page {
+                padding: 20px;
+            }
+            
+            .layout-horizontal {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .layout-double img {
+                max-width: 48%;
+            }
+            
+            .nav-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+            }
+            
+            #musicBtn {
+                width: 55px;
+                height: 55px;
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Partículas de fondo -->
+    <div id="particles"></div>
+
+    <!-- Contador regresivo -->
+    <div id="countdown">5</div>
+
+    <!-- Mensaje de feliz cumpleaños -->
+    <div id="happyMessage">
+        <div class="main-text">¡Feliz Cumpleaños Danikaaaaaaaaaa! 🎉</div>
+        <div class="sub-text">toca para continuar ✨</div>
+    </div>
+
+    <!-- Contenedor del libro -->
+    <div id="bookContainer">
+        <div id="book">
+            <!-- Página izquierda -->
+            <div class="page left-side" id="leftPage">
+                <div class="page-content"></div>
+            </div>
+
+            <!-- Página derecha -->
+            <div class="page right-side" id="rightPage">
+                <div class="page-content"></div>
+            </div>
+        </div>
+
+        <button class="nav-btn" id="prevBtn">‹</button>
+        <button class="nav-btn" id="nextBtn">›</button>
+        <div id="pageIndicator">Página 1 de 4</div>
+        <button id="musicBtn">🎵</button>
+    </div>
+
+    <!-- Mensaje final -->
+    <div id="finalMessage">espero que la pases bonito en este dia tan especial para ti, se que no estas con tu familia pero recueda que nosotros somos tu segunda familia </div>
+
+    <script>
+        // Contenido de las páginas con diferentes layouts
+        const pages = [
+            {
+                left: {
+                    layout: 'vertical',
+                    img: "primera imagen",
+                    text: "¡en este dia espero que la pases bonito!"
+                },
+                right: {
+                    layout: 'horizontal',
+                    img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=500&fit=crop",
+                    text: "Eres un regalo para el mundo"
+                }
+            },
+            {
+                left: {
+                    layout: 'double',
+                    img1: "hp",
+                    img2: "hp",
+                    text: "Que cada momento sea mágico"
+                },
+                right: {
+                    layout: 'vertical',
+                    img: "https://images.unsplash.com/photo-1528495612343-9ca9f4a4de28?w=500&h=400&fit=crop",
+                    text: "Hoy celebramos tu luz única"
+                }
+            },
+            {
+                left: {
+                    layout: 'horizontal',
+                    img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=500&fit=crop",
+                    text: "Un año más de risas y amor"
+                },
+                right: {
+                    layout: 'double',
+                    img1: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300&h=400&fit=crop",
+                    img2: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=400&fit=crop",
+                    text: "Eres fuerte, hermosa y especial"
+                }
+            },
+            {
+                left: {
+                    layout: 'vertical',
+                    img: "https://images.unsplash.com/photo-1481653125770-b78c206c59d4?w=500&h=400&fit=crop",
+                    text: "Que tus sueños se hagan realidad"
+                },
+                right: {
+                    layout: 'vertical',
+                    img: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=500&h=400&fit=crop",
+                    text: "¡Feliz Cumpleaños! 🎂👑"
+                }
+            }
+        ];
+
+        // Estado de la aplicación
+        const state = {
+            currentSpread: 0,
+            totalSpreads: 4,
+            musicPlaying: false,
+            isAnimating: false
+        };
+
+        // Elementos del DOM
+        const elements = {
+            countdown: document.getElementById('countdown'),
+            happyMessage: document.getElementById('happyMessage'),
+            bookContainer: document.getElementById('bookContainer'),
+            leftPage: document.getElementById('leftPage'),
+            rightPage: document.getElementById('rightPage'),
+            prevBtn: document.getElementById('prevBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            pageIndicator: document.getElementById('pageIndicator'),
+            musicBtn: document.getElementById('musicBtn'),
+            finalMessage: document.getElementById('finalMessage'),
+            particles: document.getElementById('particles')
+        };
+
+        // Crear partículas de fondo
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 8}s`;
+                particle.style.animationDuration = `${5 + Math.random() * 6}s`;
+                elements.particles.appendChild(particle);
+            }
+        }
+
+        // Contador regresivo
+        function startCountdown() {
+            let count = 5;
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    elements.countdown.textContent = count;
+                    createConfetti(50);
+                } else {
+                    clearInterval(interval);
+                    elements.countdown.style.opacity = '0';
+                    setTimeout(() => {
+                        elements.countdown.style.display = 'none';
+                        showHappyMessage();
+                    }, 500);
+                }
+            }, 1000);
+            createConfetti(50);
+        }
+
+        // Mostrar mensaje de feliz cumpleaños
+        function showHappyMessage() {
+            elements.happyMessage.style.display = 'block';
+            createConfetti(100);
+            
+            elements.happyMessage.addEventListener('click', () => {
+                elements.happyMessage.style.opacity = '0';
+                setTimeout(() => {
+                    elements.happyMessage.style.display = 'none';
+                    showBook();
+                }, 500);
+            });
+        }
+
+        // Mostrar libro
+        function showBook() {
+            elements.bookContainer.style.display = 'block';
+            updatePages();
+            updateNavigation();
+        }
+
+        // Renderizar contenido según el layout
+        function renderPageContent(pageData) {
+            if (pageData.layout === 'vertical') {
+                return `
+                    <div class="layout-vertical">
+                        <img src="${pageData.img}" alt="Celebración">
+                        <div class="page-text">${pageData.text}</div>
+                    </div>
+                `;
+            } else if (pageData.layout === 'horizontal') {
+                return `
+                    <div class="layout-horizontal">
+                        <div class="text-side">
+                            <div class="page-text">${pageData.text}</div>
+                        </div>
+                        <div class="image-side">
+                            <img src="${pageData.img}" alt="Celebración">
+                        </div>
+                    </div>
+                `;
+            } else if (pageData.layout === 'double') {
+                return `
+                    <div class="layout-double">
+                        <div class="images-container">
+                            <img src="${pageData.img1}" alt="Celebración">
+                            <img src="${pageData.img2}" alt="Celebración">
+                        </div>
+                        <div class="page-text">${pageData.text}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Actualizar contenido de las páginas
+        function updatePages() {
+            const spread = pages[state.currentSpread];
+            
+            // Actualizar página izquierda
+            const leftContent = elements.leftPage.querySelector('.page-content');
+            leftContent.innerHTML = renderPageContent(spread.left);
+            
+            // Actualizar página derecha
+            const rightContent = elements.rightPage.querySelector('.page-content');
+            rightContent.innerHTML = renderPageContent(spread.right);
+        }
+
+        // Crear confeti
+        function createConfetti(amount) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8'];
+            
+            for (let i = 0; i < amount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.top = '-10px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s linear forwards`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        // Crear corazones
+        function createHearts() {
+            for (let i = 0; i < 10; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.bottom = '0';
+                heart.style.animationDelay = `${Math.random() * 0.5}s`;
+                document.body.appendChild(heart);
+                
+                setTimeout(() => heart.remove(), 3000);
+            }
+        }
+
+        // Navegar siguiente
+        function nextPage() {
+            if (state.isAnimating || state.currentSpread >= state.totalSpreads - 1) return;
+            
+            state.isAnimating = true;
+            state.currentSpread++;
+            
+            // Primero actualizar el contenido de ambas páginas
+            const nextSpread = pages[state.currentSpread];
+            const leftContent = elements.leftPage.querySelector('.page-content');
+            const rightContent = elements.rightPage.querySelector('.page-content');
+            
+            // Guardar el contenido nuevo para la página derecha
+            const newRightContent = renderPageContent(nextSpread.right);
+            
+            // Iniciar animación de volteo
+            elements.rightPage.classList.add('turning', 'turn-forward');
+            
+            setTimeout(() => {
+                // A mitad de la animación (cuando la página está de lado), cambiar el contenido
+                leftContent.innerHTML = renderPageContent(nextSpread.left);
+                rightContent.innerHTML = newRightContent;
+            }, 600);
+            
+            setTimeout(() => {
+                // Limpiar clases de animación
+                elements.rightPage.classList.remove('turning', 'turn-forward');
+                state.isAnimating = false;
+                updateNavigation();
+                createHearts();
+                
+                // Si es la última página, mostrar mensaje final
+                if (state.currentSpread === state.totalSpreads - 1) {
+                    setTimeout(() => {
+                        elements.bookContainer.style.transition = 'opacity 1.5s ease, transform 1.5s ease';
+                        elements.bookContainer.style.opacity = '0';
+                        elements.bookContainer.style.transform = 'scale(0.7) rotateY(20deg)';
+                        
+                        setTimeout(() => {
+                            elements.bookContainer.style.display = 'none';
+                            elements.finalMessage.style.display = 'block';
+                            createConfetti(200);
+                        }, 1500);
+                    }, 2000);
+                }
+            }, 1200);
+        }
+
+        // Navegar anterior
+        function prevPage() {
+            if (state.isAnimating || state.currentSpread <= 0) return;
+            
+            state.isAnimating = true;
+            state.currentSpread--;
+            
+            // Actualizar contenido de ambas páginas
+            const prevSpread = pages[state.currentSpread];
+            const leftContent = elements.leftPage.querySelector('.page-content');
+            const rightContent = elements.rightPage.querySelector('.page-content');
+            
+            // Iniciar animación de volteo inversa
+            elements.rightPage.classList.add('turning', 'turn-backward');
+            
+            setTimeout(() => {
+                // A mitad de la animación, cambiar el contenido
+                leftContent.innerHTML = renderPageContent(prevSpread.left);
+                rightContent.innerHTML = renderPageContent(prevSpread.right);
+            }, 600);
+            
+            setTimeout(() => {
+                elements.rightPage.classList.remove('turning', 'turn-backward');
+                state.isAnimating = false;
+                updateNavigation();
+                createHearts();
+            }, 1200);
+        }
+
+        // Actualizar navegación
+        function updateNavigation() {
+            elements.prevBtn.disabled = state.currentSpread === 0;
+            elements.nextBtn.disabled = state.currentSpread === state.totalSpreads - 1;
+            elements.pageIndicator.textContent = `Página ${state.currentSpread + 1} de ${state.totalSpreads}`;
+        }
+
+        // Música (simulada)
+        function toggleMusic() {
+            state.musicPlaying = !state.musicPlaying;
+            elements.musicBtn.textContent = state.musicPlaying ? '🔇' : '🎵';
+        }
+
+        // Event listeners
+        elements.prevBtn.addEventListener('click', prevPage);
+        elements.nextBtn.addEventListener('click', nextPage);
+        elements.musicBtn.addEventListener('click', toggleMusic);
+
+        // Soporte para teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'ArrowRight') nextPage();
+        });
+
+        // Inicializar
+        createParticles();
+        startCountdown();
+    </script>
+</body>
+</html>

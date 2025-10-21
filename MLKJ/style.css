@@ -1,0 +1,16 @@
+/* Estilos para fondo, fuentes, animaciones de libro, corazones, etc. */
+body { margin:0; overflow:hidden; background:#000; font-family: 'Segoe UI', sans-serif; color:#fff; }
+#countdown { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5em; color:#0f0; background:#000;}
+#scene { display:none; position: relative; width:100%; height:100vh; overflow:hidden; }
+#happy { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:4em; opacity:0; transition:opacity 1s;}
+#book { display:flex; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) perspective(1000px); width:400px; height:300px; }
+.page { position:absolute; width:100%; height:100%; background:#fff; backface-visibility:hidden; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; font-size:1.2em; color:#333; transition: transform 0.8s; transform-origin: left; }
+.page.back { background: none; box-shadow: none; }
+#prev,#next { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.7); border:none; font-size:2em; padding:0 10px; cursor:pointer; }
+#prev { left:10px;} #next { right:10px;}
+#hearts { pointer-events:none; position:absolute; inset:0;}
+.heart { position:absolute; width:20px; height:20px; background:red; transform:rotate(45deg); animation:rise 1s ease-out forwards;}
+.heart::before, .heart::after { content:""; position:absolute; width:20px; height:20px; background:red; border-radius:50%; }
+.heart::before { top:-10px; } .heart::after { left:10px; }
+@keyframes rise { 0% {opacity:1; transform:translate(0,0) scale(1);} 100% {opacity:0; transform:translate(60px,-160px) scale(1.5);} }
+#play { position:absolute; bottom:20px; right:20px; background:#fff; border:none; border-radius:50%; width:50px; height:50px; font-size:1.5em; cursor:pointer; }
